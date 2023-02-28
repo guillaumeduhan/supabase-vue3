@@ -1,20 +1,26 @@
 <script setup lang="ts">
-import { reactive } from "vue"
+import { reactive, onMounted } from "vue"
 import { useAuth } from "@/composables/useAuth"
 import Auth from "@/views/Auth.vue"
 import Header from "@/components/Header.vue"
 
-const { isLoggedIn, setUser, supabase, Loading, router, RouterView } = useAuth()
+const { isLoggedIn, setUser, supabase, Loading, router, route, RouterView } = useAuth()
 
 const state = reactive({
   loading: false
 })
 
-supabase.auth.onAuthStateChange((_, session) => {
-  state.loading = true
-  setUser(session ? session.user : null)
-  router.push('/')
-  state.loading = false
+onMounted(() => {
+  supabase.auth.onAuthStateChange((_, session) => {
+    state.loading = true
+    if (!session) {
+      router.push('/')
+    } else {
+      setUser(session ? session.user : null)
+      router.forward()
+    }
+    state.loading = false
+  })
 })
 </script>
 
